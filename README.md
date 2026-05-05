@@ -46,6 +46,7 @@ Valores esperados:
 
 - `npm run start`: inicia a API de forma estatica.
 - `npm run dev`: inicia com `nodemon` e reinicia automaticamente ao detectar alteracoes.
+- `npm test`: executa testes unitarios (Jest).
 
 ## Como executar
 
@@ -69,6 +70,24 @@ npm run dev
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me` (protegido por Bearer Token)
+- `POST /api/transactions` (protegido por Bearer Token — cadastra lancamento `debito` ou `credito`)
+
+Payload de exemplo para `POST /api/transactions`:
+
+```json
+{
+  "tipo": "credito",
+  "descricao": "Pagamento recebido",
+  "valor": 150.5,
+  "data_lancamento": "2026-05-05T12:00:00.000Z"
+}
+```
+
+Regras principais:
+
+- `tipo`: apenas `debito` ou `credito`.
+- `valor`: numero maior que zero.
+- `descricao` e `data_lancamento`: obrigatorios (`data_lancamento` em ISO 8601).
 
 ## Swagger
 
