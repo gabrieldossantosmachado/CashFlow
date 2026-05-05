@@ -9,6 +9,7 @@ servers:
 tags:
   - name: Health
   - name: Auth
+  - name: Transactions
 paths:
   /api/health:
     get:
@@ -87,7 +88,70 @@ paths:
           description: Token válido
         "401":
           description: Token inválido ou ausente
+  /api/transactions:
+    post:
+      tags: [Transactions]
+      summary: Cadastra lançamento de débito ou crédito
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tipo, descricao, valor, data_lancamento]
+              properties:
+                tipo:
+                  type: string
+                  enum: [debito, credito]
+                  example: credito
+                descricao:
+                  type: string
+                  example: Pagamento recebido
+                valor:
+                  type: number
+                  format: double
+                  example: 150.5
+                data_lancamento:
+                  type: string
+                  format: date-time
+                  example: "2026-05-05T12:00:00.000Z"
+      responses:
+        "201":
+          description: Lançamento criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionCreated"
+        "400":
+          description: Dados inválidos (ex. tipo diferente de débito/crédito)
+        "401":
+          description: Token inválido ou ausente
 components:
+  schemas:
+    TransactionCreated:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "661fdeadbeef001122334455"
+        tipo:
+          type: string
+          enum: [debito, credito]
+        descricao:
+          type: string
+        valor:
+          type: number
+        data_lancamento:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
   securitySchemes:
     bearerAuth:
       type: http
