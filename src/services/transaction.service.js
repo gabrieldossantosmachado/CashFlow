@@ -79,7 +79,36 @@ const create = async (userId, body) => {
   return formatTransaction(doc);
 };
 
+const listByUser = async (userId) => {
+  const docs = await Transaction.find({ userId })
+    .sort({ data_lancamento: -1 })
+    .lean();
+
+  const creditos = [];
+  const debitos = [];
+  let totalCredito = 0;
+  let totalDebito = 0;
+
+  for (const doc of docs) {
+    const item = formatTransaction(doc);
+    if (doc.tipo === "credito") {
+      creditos.push(item);
+      totalCredito += doc.valor;
+    } else {
+      debitos.push(item);
+      totalDebito += doc.valor;
+    }
+  }
+
+  return {
+    creditos,
+    debitos,
+    totais: { credito: totalCredito, debito: totalDebito },
+  };
+};
+
 module.exports = {
   create,
   validateCreateTransactionPayload,
+  listByUser,
 };
