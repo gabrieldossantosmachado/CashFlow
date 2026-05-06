@@ -1,5 +1,14 @@
 const transactionService = require("../services/transaction.service");
 
+const list = async (req, res, next) => {
+  try {
+    const payload = await transactionService.listByUser(req.user.id);
+    res.status(200).json(payload);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const create = async (req, res, next) => {
   try {
     const payload = await transactionService.create(req.user.id, req.body);
@@ -10,5 +19,6 @@ const create = async (req, res, next) => {
 };
 
 module.exports = {
+  list,
   create,
 };

@@ -4,6 +4,7 @@ const transactionController = require("../controllers/transaction.controller");
 
 const transactionRoutes = Router();
 
+transactionRoutes.get("/", authMiddleware, transactionController.list);
 transactionRoutes.post("/", authMiddleware, transactionController.create);
 
 module.exports = transactionRoutes;

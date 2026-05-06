@@ -70,6 +70,7 @@ npm run dev
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me` (protegido por Bearer Token)
+- `GET /api/transactions` (protegido por Bearer Token — lista lancamentos do usuario, separados em `credito` e `debito`, com `totais`)
 - `POST /api/transactions` (protegido por Bearer Token — cadastra lancamento `debito` ou `credito`)
 
 Payload de exemplo para `POST /api/transactions`:
@@ -88,6 +89,26 @@ Regras principais:
 - `tipo`: apenas `debito` ou `credito`.
 - `valor`: numero maior que zero.
 - `descricao` e `data_lancamento`: obrigatorios (`data_lancamento` em ISO 8601).
+
+Resposta de exemplo para `GET /api/transactions` (ordem por `data_lancamento`, mais recente primeiro; sem dados vem arrays vazios e totais em zero):
+
+```json
+{
+  "creditos": [
+    {
+      "id": "...",
+      "tipo": "credito",
+      "descricao": "Pagamento recebido",
+      "valor": 150.5,
+      "data_lancamento": "2026-05-05T12:00:00.000Z",
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  ],
+  "debitos": [],
+  "totais": { "credito": 150.5, "debito": 0 }
+}
+```
 
 ## Swagger
 
