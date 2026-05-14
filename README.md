@@ -23,6 +23,8 @@ src/
   services/
   app.js
   server.js
+test/
+  ct-cf4-001-login-valid-credentials.test.js
 ```
 
 ## Variaveis de ambiente
@@ -47,6 +49,7 @@ Valores esperados:
 - `npm run start`: inicia a API de forma estatica.
 - `npm run dev`: inicia com `nodemon` e reinicia automaticamente ao detectar alteracoes.
 - `npm test`: executa testes unitarios (Jest).
+- `npm run test:api`: executa testes de API automatizados (Mocha, Chai e Supertest) na pasta `test/`.
 
 ## Como executar
 
@@ -118,9 +121,30 @@ Documentacao disponivel em:
 
 Especificacao OpenAPI em `src/docs/swagger.yaml`.
 
+## Testes de API (Mocha + Chai + Supertest)
+
+Cenarios de integracao ficam em `test/`. O caso **CT-CF4-001** (login com credenciais validas) cobre `POST /api/auth/login` conforme a especificacao OpenAPI: status `200`, corpo com `token` (JWT) e `user` sem expor a senha, e uso do token em `GET /api/auth/me`.
+
+**Requisitos:** MongoDB acessivel e variaveis `MONGODB_URI` e `JWT_SECRET` definidas no `.env` (o proprio cenario registra um usuario exclusivo antes do login).
+
+**Como rodar:**
+
+```bash
+npm install
+npm run test:api
+```
+
+Para rodar apenas o CT-CF4-001:
+
+```bash
+npx mocha test/ct-cf4-001-login-valid-credentials.test.js
+```
+
+Configuracao global do Mocha: `.mocharc.json` (timeout e padrao de arquivos `test/**/*.test.js`).
+
 ## Proximos passos sugeridos
 
-- Criar testes automatizados.
+- Expandir suite de testes de API para outros casos.
 - Configurar lint/format.
 - Adicionar workflows de CI no GitHub Actions.
 - Preparar configuracao de deploy para Vercel.
