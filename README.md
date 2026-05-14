@@ -142,9 +142,24 @@ npx mocha test/ct-cf4-001-login-valid-credentials.test.js
 
 Configuracao global do Mocha: `.mocharc.json` (timeout e padrao de arquivos `test/**/*.test.js`).
 
+## CI no GitHub (Actions)
+
+A integracao continua esta definida em `.github/workflows/ci.yml`.
+
+**Quando roda:** ao abrir ou atualizar um **pull request** com destino a branch **`main`**.
+
+**O que o job faz (resumo):** contêiner Node 20, serviço MongoDB, `npm ci`, sobe a API com `npm start` em background, aguarda `GET /api/health`, executa `npm test` (Jest em `src/`) e `npm run test:api` (Mocha em `test/`).
+
+**Como acompanhar no GitHub:**
+
+1. Envie sua branch para o remoto (`git push origin <sua-branch>`).
+2. Abra um pull request da sua branch para `main` (no GitHub: **Pull requests** → **New pull request**).
+3. Na pagina do PR, a secao **Checks** mostra o workflow **CI**; voce tambem pode abrir a aba **Actions** do repositorio e selecionar a execucao correspondente ao PR para ver logs completos.
+
+**Como disparar de novo:** qualquer novo `git push` na branch do PR reexecuta a pipeline automaticamente.
+
 ## Proximos passos sugeridos
 
 - Expandir suite de testes de API para outros casos.
 - Configurar lint/format.
-- Adicionar workflows de CI no GitHub Actions.
 - Preparar configuracao de deploy para Vercel.
