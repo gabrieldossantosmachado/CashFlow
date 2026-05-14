@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:20-bookworm
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      BASE_URL: http://127.0.0.1:3000
+      MONGODB_URI: mongodb://mongodb:27017/cashflow_ci
+      JWT_SECRET: ci-jwt-secret-testing-only-at-least-32chars
+      JWT_EXPIRES_IN: 1d
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start API in background
+        run: |
+          npm start > /tmp/cashflow-api.log 2>&1 &
+          echo "API_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait until API is healthy
+        run: |
+          node <<'EOF'
+          const http = require("http");
+          const deadline = Date.now() + 60000;
+          const url = "http://127.0.0.1:3000/api/health";
+
+          function attempt() {
+            http
+              .get(url, (res) => {
+                let body = "";
+                res.on("data", (c) => {
+                  body += c;
+                });
+                res.on("end", () => {
+                  if (res.statusCode === 200) {
+                    console.log("API responded 200:", body.trim());
+                    process.exit(0);
+                  }
+                  retry();
+                });
+              })
+              .on("error", retry);
+          }
+
+          function retry() {
+            if (Date.now() > deadline) {
+              console.error("Timeout waiting for GET /api/health");
+              process.exit(1);
+            }
+            setTimeout(attempt, 2000);
+          }
+
+          attempt();
+          EOF
+
+      - name: Run unit tests (Jest)
+        run: npm test
+
+      - name: Run API tests (Mocha)
+        run: npm run test:api
+
+      - name: Print API logs on failure
+        if: failure()
+        run: cat /tmp/cashflow-api.log || true
