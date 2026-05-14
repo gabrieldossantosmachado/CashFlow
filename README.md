@@ -23,6 +23,8 @@ src/
   services/
   app.js
   server.js
+scripts/
+  ci-full-flow.js
 test/
   ct-cf4-001-login-valid-credentials.test.js
 ```
@@ -50,6 +52,7 @@ Valores esperados:
 - `npm run dev`: inicia com `nodemon` e reinicia automaticamente ao detectar alteracoes.
 - `npm test`: executa testes unitarios (Jest).
 - `npm run test:api`: executa testes de API automatizados (Mocha, Chai e Supertest) na pasta `test/`.
+- `npm run ci:full`: sobe a API localmente, espera `/api/health`, roda `npm test` e `npm run test:api` (fluxo parecido com a CI).
 
 ## Como executar
 
@@ -157,6 +160,49 @@ A integracao continua esta definida em `.github/workflows/ci.yml`.
 3. Na pagina do PR, a secao **Checks** mostra o workflow **CI**; voce tambem pode abrir a aba **Actions** do repositorio e selecionar a execucao correspondente ao PR para ver logs completos.
 
 **Como disparar de novo:** qualquer novo `git push` na branch do PR reexecuta a pipeline automaticamente.
+
+### Exemplo de fluxo completo (Git + CI + testes locais)
+
+Visao geral do que acontece do commit ate o resultado da pipeline:
+
+```mermaid
+flowchart LR
+  subgraph local [Na sua maquina]
+    A[Alteracoes no codigo] --> B[git add / commit]
+    B --> C[git push origin sua-branch]
+  end
+  subgraph github [GitHub]
+    C --> D[Pull Request para main]
+    D --> E[Workflow CI dispara]
+    E --> F[npm ci]
+    F --> G[npm start em background]
+    G --> H[Espera GET /api/health]
+    H --> I[npm test]
+    I --> J[npm run test:api]
+    J --> K[Checks verde ou vermelho no PR]
+  end
+```
+
+**Exemplo concreto de comandos Git (substitua a branch):**
+
+```bash
+git checkout -b feat/minha-alteracao
+# ... edita arquivos ...
+git add .
+git commit -m "feat: descreva a mudanca"
+git push -u origin feat/minha-alteracao
+```
+
+No site do GitHub: **Compare & pull request** → base `main` → abrir o PR. A execucao **CI** aparece em **Checks** e em **Actions**.
+
+**Reproduzir o mesmo fluxo de testes no seu PC** (MongoDB e `.env` com `MONGODB_URI` e `JWT_SECRET`):
+
+```bash
+npm install
+npm run ci:full
+```
+
+Esse script (`scripts/ci-full-flow.js`) sobe `node src/server.js`, espera `GET /api/health`, roda `npm test` e `npm run test:api`, depois encerra a API — equivalente ao que a CI faz apos o `npm ci`.
 
 ## Proximos passos sugeridos
 
